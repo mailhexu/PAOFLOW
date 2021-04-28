@@ -1330,9 +1330,9 @@ mo    '''
     Returns:
         None
     '''
-    if self.rank == 0:
-      print('Epsilon routine is currently under construction.')
-    return
+#    if self.rank == 0:
+#      print('Epsilon routine is currently under construction.')
+#    return
     from .defs.do_epsilon import do_dielectric_tensor
 
     arrays,attr = self.data_controller.data_dicts()
