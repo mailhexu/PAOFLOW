@@ -121,16 +121,21 @@ def do_build_pao_hamiltonian ( data_controller ):
   # Building the PAO Hamiltonian
   #------------------------------
   arry,attr = data_controller.data_dicts()
-
-  ashape = (attr['nawf'],attr['nawf'],attr['nk1'],attr['nk2'],attr['nk3'],attr['nspin'])
+  
+  if attr['test_basis']:
+    ashape = (attr['nawf'],attr['nawf'],attr['nkpnts'],attr['nspin'])
+  else:
+    ashape = (attr['nawf'],attr['nawf'],attr['nk1'],attr['nk2'],attr['nk3'],attr['nspin'])
   
   arry['Hks'] = build_Hks(data_controller)
 
   if attr['expand_wedge']:
     from .pao_sym import open_grid_wrapper
     open_grid_wrapper(data_controller)
-
-  attr['nkpnts'] = nkpnts = np.prod(ashape[2:5])
+  
+  if not attr['test_basis']:
+    attr['nkpnts'] = nkpnts = np.prod(ashape[2:5])
+  efermi = attr['efermi']
 
   # NOTE: Take care of non-orthogonality, if needed
   # Hks from projwfc is orthogonal. If non-orthogonality is required, we have to 
@@ -138,7 +143,7 @@ def do_build_pao_hamiltonian ( data_controller ):
   # acbn0 flag == 0 - makes H non orthogonal (original basis of the atomic pseudo-orbitals)
   # acbn0 flag == 1 - makes H orthogonal (rotated basis) 
 
-  if rank == 0:
+  if rank == 0 and efermi == True:
     from .do_Efermi import E_Fermi
     arry['Hks'] = np.reshape(arry['Hks'], ashape)
 

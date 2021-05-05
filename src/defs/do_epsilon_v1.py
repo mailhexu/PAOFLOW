@@ -207,6 +207,7 @@ def epsi_loop ( data_controller, ene, ispin, ipol, jpol):
     fnF = sq2_dk1 = diag_ind = None
 
   epsi *= 4.0*np.pi*kq_wght/(EPS0 * EVTORY * attributes['omega'])
+#  epsi *= (16.0 * RYTOEV * np.pi * kq_wght / (attributes['omega'])) * (RYTOEV / attributes['alat'])
   jdos *= kq_wght
 
   np.seterr(over=orig_over_err)
@@ -262,7 +263,7 @@ def smear_epsr_loop ( data_controller, ene, ispin, ipol, jpol ):
 def epsr_kramerskronig ( data_controller, ene, epsi ):
   from .smearing import intmetpax
   from scipy.integrate import simps
-  from .load_balancing import load_balancing
+  from .communication import load_balancing
 
   arrays,attributes = data_controller.data_dicts()
 

@@ -361,7 +361,7 @@ class PAOFLOW:
     
 
 
-  def pao_hamiltonian ( self, shift_type=1, insulator=False, write_binary=False, expand_wedge=True, symmetrize=False, thresh=1.e-6, max_iter=16 ):
+  def pao_hamiltonian ( self, shift_type=1, insulator=False, write_binary=False, expand_wedge=True, symmetrize=False, thresh=1.e-6, max_iter=16, efermi=True, test_basis=False ):
     '''
     Construct the Tight Binding Hamiltonian
     Yields 'HRs', 'Hks' and 'kq_wght'
@@ -384,13 +384,18 @@ class PAOFLOW:
     if 'shift_type' not in attr: attr['shift_type'] = shift_type
     if 'write_binary' not in attr: attr['write_binary'] = write_binary
 
+    attr['test_basis'] = test_basis
+    if attr['test_basis']:
+      expand_wedge = False
+      efermi = False
     attr['symm_thresh'] = thresh
     attr['symmetrize'] = symmetrize
     attr['symm_max_iter'] = max_iter
     attr['expand_wedge'] = expand_wedge
+    attr['efermi'] = efermi
 
     if attr['symmetrize'] and attr['acbn0']:
-      if rank == 0:
+      if self.rank == 0:
         print('WARNING: Non-ortho is currently not supported with pao_sym. Use nosym=.true., noinv=.true.')
 
     try:
@@ -406,17 +411,39 @@ class PAOFLOW:
     del arrays['U']
 
     try:
-      do_Hks_to_HRs(self.data_controller)
+      if not test_basis:
+        do_Hks_to_HRs(self.data_controller)
 
-      ### PARALLELIZATION
-      self.data_controller.broadcast_single_array('HRs')
-
-      get_K_grid_fft(self.data_controller)
+        ### PARALLELIZATION
+        self.data_controller.broadcast_single_array('HRs')
+  
+        get_K_grid_fft(self.data_controller)
+        self.report_module_time('k -> R')
+      else:
+        if self.rank == 0:
+          import statistics as stat
+          
+          nawf,_,nkpnts,_ = arrays['Hks'].shape
+          Hks = arrays['Hks']
+          E_k = np.zeros((nawf,nkpnts,1))
+          for ispin in range(attr['nspin']): 
+              for ik in range(nkpnts):
+                  eigval,_ = np.linalg.eigh(Hks[:,:,ik,ispin],UPLO='U')
+                  E_k[:,ik,ispin] = np.sort(np.real(eigval))
+              for b in range(1,attr['bnd']+1):
+                  spill = np.zeros(nkpnts,dtype=float)
+                  for i in range(b):
+                      qe = arrays['my_eigsmat'][i,:,ispin]
+                      pao = E_k[i,:,ispin]
+                      spill = np.abs(qe-pao)
+                      
+                  print('spilling for band {0:3d} = {1:6.4e} with st-dev = {2:6.4e} and max spill = {3:6.4e} \
+ -  max E(pao) {4:6.4f}'.format(i+1,stat.mean(spill),stat.stdev(spill),np.max(spill),np.max(pao)))
+          self.report_module_time('Test basis')
     except Exception as e:
       self.report_exception('pao_hamiltonian')
       if attr['abort_on_exception']:
         raise e
-    self.report_module_time('k -> R')
 
 
 
