@@ -1341,49 +1341,7 @@ mo    '''
 
 
 
-  def dielectric_tensor_v1 ( self, metal=False, temp=None, delta=0.01, emin=0., emax=10., ne=500, kramerskronig=False, d_tensor=None ):
-    '''
-    Calculate the Dielectric Tensor
-
-    Arguments:
-      metal (bool): True if system is metallic
-      temp (float): Temperature (default is Room Temperature, 0.025852eV)
-      delta (float): Smearing width for gaussian (if smearing is None)
-      emin (float): The minimum value of energy
-      emax (float): The maximum value of energy
-      ne (float): Number of energy values between emin and emax
-      d_tensor (list): List of tensor elements to calculate (e.g. To calculate xx and yz use [[0,0],[1,2]])
-
-    Returns:
-      None
-    '''
-    from .defs.do_epsilon_v1 import do_dielectric_tensor
-
-    arrays,attr = self.data_controller.data_dicts()
-
-    if temp is not None: attr['temp'] = temp
-    if 'delta' not in attr: attr['delta'] = delta
-    if 'metal' not in attr: attr['metal'] = metal
-    if d_tensor is not None: arrays['d_tensor'] = np.array(d_tensor)
-
-    #-----------------------------------------------
-    # Compute dielectric tensor (Re and Im epsilon)
-    #-----------------------------------------------
-
-    try:
-      ene = np.linspace(emin, emax, ne)
-      do_dielectric_tensor(self.data_controller, ene, kramerskronig)
-    except Exception as e:
-      self.report_exception('dielectric_tensor')
-      if attr['abort_on_exception']:
-        raise e
-
-    self.report_module_time('Dielectric Tensor')
-
-
-
-
-  def dielectric_tensor ( self, metal=False, temp=None, delta=0.01, emin=0., emax=10., ne=500, d_tensor=None ):
+  def dielectric_tensor ( self, metal=False, temp=None, delta=0.01, deltaint=0.01, emin=0., emax=10., ne=500, d_tensor=None ):
     '''
     Calculate the Dielectric Tensor
 
@@ -1404,9 +1362,13 @@ mo    '''
     arrays,attr = self.data_controller.data_dicts()
 
     if temp is not None: attr['temp'] = temp
-    if 'delta' not in attr: attr['delta'] = delta
+#    if 'delta' not in attr: attr['delta'] = delta
     if 'metal' not in attr: attr['metal'] = metal
+#    if 'deltaint' not in attr: attr['deltaint'] = deltaint
     if d_tensor is not None: arrays['d_tensor'] = np.array(d_tensor)
+    
+    attr['delta'] = delta
+    attr['deltaint'] = deltaint
 
     #-----------------------------------------------
     # Compute dielectric tensor (Re and Im epsilon)
