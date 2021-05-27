@@ -124,8 +124,8 @@ def epsi_loop ( data_controller, ene, ispin, ipol, jpol):
 
   fn = None
   if smearing == None:
-#    fn = 1./(1.+np.exp(arrays['E_k'][:,:bnd,ispin]/temp, dtype=np.float128))
-    fn = 1./(1.+np.exp(arrays['E_k'][:,:bnd,ispin]/delta, dtype=np.float128))
+    fn = 1./(1.+np.exp(arrays['E_k'][:,:bnd,ispin]/temp, dtype=np.float128))
+#    fn = 1./(1.+np.exp(arrays['E_k'][:,:bnd,ispin]/delta, dtype=np.float128))
   elif smearing == 'gauss':
     fn = intgaussian(arrays['E_k'][:,:bnd,ispin], Ef, arrays['deltakp'][:,:bnd,ispin])
   elif smearing == 'm-p':
