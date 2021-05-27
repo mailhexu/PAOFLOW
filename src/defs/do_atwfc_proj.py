@@ -376,7 +376,7 @@ def calc_ylmg(k_plus_G, q):
     ylmg[:,3] = -n1 * kGy         # the same in the l=2 and l=3 blocks, when |m| is odd
 
     # l = 2
-    ylmg[:,4] = n2 * (3*kGz*kGz - 1)/(2*np.sqrt(3))
+    ylmg[:,4] = n2 * (3*kGz*kGz - kGx*kGx - kGy*kGy - kGz*kGz) / (2*np.sqrt(3))
     ylmg[:,5] = -n2 * kGz*kGx
     ylmg[:,6] = -n2 * kGy*kGz
     ylmg[:,7] = n2 * (kGx*kGx - kGy*kGy) / 2.0
@@ -422,9 +422,9 @@ def calc_ylmg_complex_0(ylmg):
     # l = 3
     ylmgc[:,9] = ylmg[:,9]
     #ylmgc[:,10] = -(ylmg[:,10] + 1j*ylmg[:,11])/sqrt2   # m=1
-    #ylmgc[:,10] =  (ylmg[:,10] - 1j*ylmg[:,11])/sqrt2   # m=-1
+    #ylmgc[:,11] =  (ylmg[:,10] - 1j*ylmg[:,11])/sqrt2   # m=-1
     ylmgc[:,10] =  (ylmg[:,10] + 1j*ylmg[:,11])/sqrt2   # m=1     # because QE cub. harm. have opposite sign
-    ylmgc[:,10] = -(ylmg[:,10] - 1j*ylmg[:,11])/sqrt2   # m=-1
+    ylmgc[:,11] = -(ylmg[:,10] - 1j*ylmg[:,11])/sqrt2   # m=-1
     ylmgc[:,12] = +(ylmg[:,12] + 1j*ylmg[:,13])/sqrt2   # m=2
     ylmgc[:,13] =  (ylmg[:,12] - 1j*ylmg[:,13])/sqrt2   # m=-2
     #ylmgc[:,14] = -(ylmg[:,14] + 1j*ylmg[:,15])/sqrt2   # m=3
@@ -605,10 +605,10 @@ def ortho_atwfc_k(atwfc_k):
     for j in range(natwfc):
       ovp[i,j] = np.dot(np.conj(atwfc_k[i]), atwfc_k[j])
       
-      # check that eigenvalues are positive
+  # check that eigenvalues are positive
   eigs, eigv = np.linalg.eigh(ovp)
-  assert (np.all(eigs>=0))
-  
+  assert np.all(eigs>=0), 'basis set is linear dependent!!!'
+ 
   # orthogonalize
   if True:
     X = scipy.linalg.sqrtm(ovp)
