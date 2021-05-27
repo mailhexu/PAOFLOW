@@ -63,7 +63,7 @@ def E_Fermi ( Hksp, data_controller, parallel=False ):
     Elw = Elw - 2 * degauss
 
     # bisection method
-    fac = 1 if dftSO else 2
+    fac = 1 if (dftSO or nspin==2) else 2
     sumkup_aux = fac*np.sum(intmetpax(eig[:nbnd,:,:],Eup,degauss))
     sumklw_aux = fac*np.sum(intmetpax(eig[:nbnd,:,:],Elw,degauss))
 
