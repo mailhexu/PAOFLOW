@@ -264,7 +264,6 @@ class PAOFLOW:
     Calculate the projections on the atomic basis provided by the pseudopotential or 
     on the all-electron internal basis sets.
     Replaces projwfc.
-    TODO  * add spin-orbit and non-collinear cases
     '''
 
     from .defs.do_atwfc_proj import build_pswfc_basis_all

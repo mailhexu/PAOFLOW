@@ -26,7 +26,7 @@ from .communication import load_balancing
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-def do_density ( data_controller, nr1, nr2, nr3 ):
+def do_density ( data_controller, nr1, nr2, nr3, internal=False):
 
   arry,attr = data_controller.data_dicts()
 
@@ -38,13 +38,18 @@ def do_density ( data_controller, nr1, nr2, nr3 ):
   rhoaux = np.zeros((nr1,nr2,nr3,attr['nspin']),dtype=complex,order="C")
 
   ini_ik,end_ik = load_balancing(comm.Get_size(), rank, attr['nkpnts'])
-  
-  basis = arry['basis']
+  if not 'basis' in arry.keys():
+    if internal:
+      basis,attr['shells'] = build_aewfc_basis(data_controller)
+    else:
+      basis,attr['shells'] = build_pswfc_basis_all(data_controller)
+  else:
+    basis = arry['basis']
   eps = 1.e-5
   for ispin in range(attr['nspin']):
     for ik in range(ini_ik,end_ik):
       gkspace = calc_gkspace(data_controller,ik,gamma_only=False)
-      atwfcgk = calc_atwfc_k(basis,gkspace)
+      atwfcgk = calc_atwfc_k(basis,gkspace,attr['dftSO'])
       oatwfcgk = ortho_atwfc_k(atwfcgk)
       atwfcr = fft_allwfc_G2R(oatwfcgk,gkspace, nr1, nr2, nr3, attr['omega'])
       for nb in range(attr['bnd']):
